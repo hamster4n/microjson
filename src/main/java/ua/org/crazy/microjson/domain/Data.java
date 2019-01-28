@@ -2,14 +2,14 @@ package ua.org.crazy.microjson.domain;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class Data {
     @SerializedName("data")
-    public ArrayList<Document> list;
+    public List<Document> documents;
 
     @Override
     public String toString() {
-        return "" + list;
+        return "" + documents;
     }
 }

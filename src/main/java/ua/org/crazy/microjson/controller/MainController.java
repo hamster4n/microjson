@@ -8,42 +8,50 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ua.org.crazy.microjson.domain.Document;
 import ua.org.crazy.microjson.repos.DocumentRepo;
-import ua.org.crazy.microjson.utils.JsonDownloader;
-import ua.org.crazy.microjson.utils.JsonToDocument;
+import ua.org.crazy.microjson.services.JsonDownloader;
+import ua.org.crazy.microjson.services.JsonToDocument;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 public class MainController {
-    @Autowired
-    private DocumentRepo documentRepo;
 
-    private JsonDownloader jsonDownloader = new JsonDownloader();
+    private JsonToDocument jsonToDocument;
+
+    @Autowired
+    public MainController(JsonToDocument jsonToDocument) {
+        this.jsonToDocument = jsonToDocument;
+    }
 
     @GetMapping()
     public String main(Model model) {
-        Iterable<Document> messages = documentRepo.findAll();
+        List<Document> messages = jsonToDocument.getSavedDocuments();
         model.addAttribute("messages", messages);
         return "main";
     }
 
     @PostMapping
-    public String add(@RequestParam String url, Model model) throws IOException {
-        System.out.println();
-        if (jsonDownloader.isValidUrl(url)) {
-            ArrayList<Document> listDocument = JsonToDocument.getListDocuments(url);
-            if (!listDocument.isEmpty()) {
-                documentRepo.saveAll(listDocument);
-                model.addAttribute("saved", "Data successfully saved!");
-            } else {
-                model.addAttribute("error", "Url or Json not valid!");
-            }
-        } else {
+    public String add(@RequestParam String url, Model model){
+        if (!jsonToDocument.isValidUrl(url)){
+            List<Document> listDocument = jsonToDocument.getSavedDocuments();
             model.addAttribute("error", "You input not URL");
+            model.addAttribute("messages", listDocument);
+            return "main";
         }
-        Iterable<Document> messages = documentRepo.findAll();
-        model.addAttribute("messages", messages);
+
+        List<Document> listDocument = jsonToDocument.fetchDocuments(url);
+
+        if (!listDocument.isEmpty()) {
+            listDocument = jsonToDocument.appendDocuments(url);
+            model.addAttribute("saved", "Data successfully saved!");
+        } else {
+            listDocument = jsonToDocument.getSavedDocuments();
+            model.addAttribute("error", "Url or Json not valid!");
+        }
+
+        model.addAttribute("messages", listDocument);
         return "main";
     }
 }

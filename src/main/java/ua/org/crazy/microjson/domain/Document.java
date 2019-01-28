@@ -1,6 +1,7 @@
 package ua.org.crazy.microjson.domain;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 public class Document {
@@ -193,5 +194,19 @@ public class Document {
                 ", dateModified='" + dateModified + '\'' +
                 ", id='" + id + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Document document = (Document) o;
+        return Objects.equals(count_id, document.count_id);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(count_id);
     }
 }
